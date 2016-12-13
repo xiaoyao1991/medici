@@ -1,5 +1,5 @@
 {
-  "name": "bidding-server",
+  "name": "advertiser",
   "version": "0.0.0",
   "private": true,
   "scripts": {
