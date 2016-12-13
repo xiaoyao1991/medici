@@ -1,9 +1,48 @@
 var express = require('express');
 var router = express.Router();
+var mediciInit = require('../lib/medici');
+var crypto = require('../lib/crypto');
 
-/* GET home page. */
+var medici = mediciInit.init();
+
+var biddingExpectation = {};
+var bidIds = {};
+
+var sk = "";
+
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  var publisher = req.body.publisherPk;
+  var eventId = req.body.eventId;
+  var currentBid = req.body.currentBid;
+
+  if (!biddingExpectation.hasOwnProperty(publisher + "|" + eventId)) {
+    biddingExpectation[publisher + "|" + eventId] = Math.random() * 10 + 1;
+    bidIds[publisher + "|" + eventId] = 0;
+  }
+  var maxExpectedBid = biddingExpectation[publisher + "|" + eventId];
+
+  if (maxExpectedBid <= currentBid) {
+    res.json({"resp": 0}); //abort
+  }
+
+  // sign a micropayment signature and send
+  var bidId = bidIds[publisher + "|" + eventId]++;
+  var amt = currentBid + 1;
+  var currentBlockId = medici.getCurrentBlock();
+  var ads = "img1";
+
+  var stub = publisher + "|" + bidId + "|" + currentBlockId + "|" + amt + "|" + ads;
+  var token = crypto.sign(sk, stub);
+
+  res.json({
+    "resp": 1,
+    "receiver": publisher,
+    "bidId": bidId,
+    "amt": amt,
+    "ads": ads,
+    "currentBlockId": currentBlockId,
+    "token": token
+  });
 });
 
 module.exports = router;

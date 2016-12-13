@@ -1,8 +1,9 @@
 var Web3 = require("web3");
+var web3;
 
 module.exports = {
-    init : function() {      
-      var web3 = new Web3();
+    init : function() {
+      web3 = new Web3();
       web3.setProvider(new web3.providers.HttpProvider("http://localhost:8545"));
 
       // solidity code code
@@ -20,7 +21,9 @@ module.exports = {
 
       // create contract
       var Medici = web3.eth.contract(abi);
-      var MediciInstance = Medici.at("0x6ea951d3380ccec0eccd14d482238c84bd270485");
-      return MediciInstance;
+      return Medici.at("0x6ea951d3380ccec0eccd14d482238c84bd270485");
+    },
+    getCurrentBlock: function() {
+      return web3.eth.blockNumber;
     }
 };
