@@ -1,0 +1,10 @@
+var mediciInit = require('../lib/medici');
+var medici = mediciInit.init('AdExchange.sol');
+var crypto = require('../lib/crypto');
+sig = crypto.sign('cdb7c231505787c5072456b26375a65ef786b0aee5154fd6868c51b37e80cb03', 'http://localhost:4000')
+var utils = require('ethereumjs-util');
+vrs = utils.fromRpcSig(sig)
+
+medici.registerAdvertiser("http://localhost:4000", vrs.v, utils.bufferToHex(vrs.r), utils.bufferToHex(vrs.s), {from: "0xe76ecb9e897190c3b1617dbb1705d95445e84505"})
+
+// crypto.verify('0xe76ecb9e897190c3b1617dbb1705d95445e84505', "http://localhost:4000", '0x194c2272d8c7d8fa8618b66003b09a91705b5cbcceeb930c72ee5f521ccd3ae06e7685f720494ff43c86a773ded32d9df442e5cb27f34069766ea0b5d643ecff01')

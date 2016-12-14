@@ -11,7 +11,7 @@ var bidIds = {};
 var BID = 1;
 var FOLD = -1;
 
-var sk = "";
+var sk = process.env.SK;
 
 router.get('/', function(req, res, next) {
   var publisher = req.body.publisherPk;

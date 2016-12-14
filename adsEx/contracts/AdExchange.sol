@@ -63,7 +63,7 @@ contract AdExchange {
   }
 
   function deposit()
-    payable
+    /*payable*/
     isRegisteredAdvertiser
   {
     DepositEntry[] entryList = depositTable[msg.sender];

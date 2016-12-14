@@ -63,7 +63,7 @@ contract AdExchange {
   }
 
   function deposit()
-    payable
+    /*payable*/
     isRegisteredAdvertiser
   {
     DepositEntry[] entryList = depositTable[msg.sender];
@@ -146,7 +146,10 @@ contract AdExchange {
     return (adds, deposits);
   }
 
+  event ECRecover(address recovered);
+
   function verifySignature(address publickey, bytes32 hashedData, uint8 v, bytes32 r, bytes32 s) internal returns (bool) {
+    ECRecover(ecrecover(hashedData,v,r,s));
     return publickey == ecrecover(hashedData,v,r,s);
   }
 

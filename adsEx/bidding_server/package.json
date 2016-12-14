@@ -9,11 +9,13 @@
     "body-parser": "~1.15.2",
     "cookie-parser": "~1.4.3",
     "debug": "~2.2.0",
+    "ethereumjs-util": "^5.0.1",
     "express": "~4.14.0",
     "jade": "~1.11.0",
+    "lodash": "^4.17.2",
     "morgan": "~1.7.0",
     "serve-favicon": "~2.3.0",
-    "ethereumjs-util": "^5.0.1",
+    "superagent": "^3.2.1",
     "web3": "^0.17.0-beta"
   }
 }

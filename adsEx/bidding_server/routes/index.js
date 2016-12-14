@@ -2,8 +2,12 @@ var express = require('express');
 var router = express.Router();
 var mediciInit = require('../lib/medici');
 var crypto = require('../lib/crypto');
+var request = require('superagent');
+var _ = require("lodash");
 
 var medici = mediciInit.init();
+var BID = 1;
+var FOLD = -1;
 
 router.get('/:num', function(req, res, next) {
   resp = medici.multiply(req.params['num']).toString(10);
@@ -20,12 +24,45 @@ router.post('/ask/', function(req, res, next) {
     res.sendStatus(401);
   }
   // get the list of advertisers
-  console.log(medici.findAvailableAdvertiserByPublisher(publisherPk));
+  var availableAdvertisers = medici.findAvailableAdvertisersByPublisher(publisherPk);
+  console.log(availableAdvertisers);
+  if (availableAdvertisers.length == 0) {
+    res.sendStatus(404);  //no willing bids
+  }
 
-  // start polling advertisers, with biddingId
-    // Who is the publisher
-    // What is the eventId
-    // Current price
+  var pkToCallback = {};
+  for (var i=0; i<availableAdvertisers.length; i++) {
+    var callback = medici.getCallbackByAdvertiser(availableAdvertisers[i]);
+    pkToCallback[availableAdvertisers[i]] = callback;
+  }
+
+  var competitors = availableAdvertisers;
+  var currentBid = 0;
+  while (competitors.length > 1) {
+    var nextRoundCompetitors = competitors;
+    for (var i=0; i<competitors.length; i++) {
+      var pk = competitors[i];
+      var callback = pkToCallback[pk];
+      request //async call????
+        .post(callback)
+        .send({
+          "publisherPk": publisherPk,
+          "eventId": eventId,
+          "currentBid": currentBid
+        })
+        .end(function(err, res){
+          if (!err) {
+            if (res.resp == BID) {
+
+            } else {
+              _.remove(nextRoundCompetitors, function(n) {
+                return n == pk;
+              });
+            }
+          }
+        });
+    }
+  }
 
 
     // Receiver’s public key

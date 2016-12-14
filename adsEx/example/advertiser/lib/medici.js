@@ -1,5 +1,6 @@
 var Web3 = require("web3");
 var fs = require("fs");
+var _ = require("lodash");
 var web3;
 
 module.exports = {
@@ -9,6 +10,9 @@ module.exports = {
 
       // solidity code code
       var source = fs.readFileSync(solidity_src_file, 'utf8');
+      source = _.replace(source, "_;", "_")
+      source = _.join(source.split("\n").slice(1), "\n");
+      console.log(source);
       var compiled = web3.eth.compile.solidity(source);
       var abi = compiled.info.abiDefinition;
 
@@ -16,7 +20,7 @@ module.exports = {
 
       // create contract
       var Medici = web3.eth.contract(abi);
-      return Medici.at("0x6ea951d3380ccec0eccd14d482238c84bd270485");
+      return Medici.at("0xbd09a57b705f3fb17c44d3f5460d6cb2e6b91bbd");
     },
     getCurrentBlock: function() {
       return web3.eth.blockNumber;
