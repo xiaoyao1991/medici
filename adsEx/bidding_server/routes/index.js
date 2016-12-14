@@ -15,8 +15,12 @@ router.post('/ask/', function(req, res, next) {
   var eventId = req.body.eventId;
 
   // verify this publisher is known
-
+  console.log(medici.isPublisherExist(publisherPk));
+  if (!medici.isPublisherExist(publisherPk)) {
+    res.sendStatus(401);
+  }
   // get the list of advertisers
+  console.log(medici.findAvailableAdvertiserByPublisher(publisherPk));
 
   // start polling advertisers, with biddingId
     // Who is the publisher
