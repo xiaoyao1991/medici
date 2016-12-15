@@ -1,9 +1,10 @@
 var express = require('express');
 var router = express.Router();
-var mediciInit = require('../lib/medici');
+var mediciUtils = require('../lib/medici');
 var crypto = require('../lib/crypto');
 
-var medici = mediciInit.init();
+var contract_src = process.env.CONTRACT;
+var medici = mediciUtils.init(contract_src);
 
 var biddingExpectation = {};
 var bidIds = {};
@@ -12,8 +13,9 @@ var BID = 1;
 var FOLD = -1;
 
 var sk = process.env.SK;
+var pk = process.env.PK;
 
-router.get('/', function(req, res, next) {
+router.post('/', function(req, res, next) {
   var publisher = req.body.publisherPk;
   var eventId = req.body.eventId;
   var currentBid = req.body.currentBid;
@@ -25,28 +27,29 @@ router.get('/', function(req, res, next) {
   var maxExpectedBid = biddingExpectation[publisher + "|" + eventId];
 
   if (maxExpectedBid <= currentBid) {
-    res.json({"resp": FOLD});
+    return res.json({"resp": FOLD});
   }
 
   // sign a micropayment signature and send
   var bidId = bidIds[publisher + "|" + eventId]++;
   var amt = currentBid + 1;
-  var currentBlockId = medici.getCurrentBlock();
-  var ads = "img1";
+  var currentBlockId = mediciUtils.getCurrentBlock();
+  var ad = "img1";
+  var sig = crypto.sign(sk, [publisher, bidId, currentBlockId, amt, ad]);
 
-  var stub = publisher + "|" + bidId + "|" + currentBlockId + "|" + amt + "|" + ads;
-  var token = crypto.sign(sk, stub);
-
-  res.json({
+  var resp = {
     "resp": BID,
     "receiver": publisher,
     "eventId": eventId,
     "bidId": bidId,
     "amt": amt,
-    "ads": ads,
+    "ad": ad,
     "currentBlockId": currentBlockId,
-    "token": token
-  });
+    "sig": sig
+  };
+
+  console.log(resp);
+  return res.json(resp);
 });
 
 module.exports = router;

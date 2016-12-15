@@ -1,0 +1,73 @@
+Demo:
+
+testrpc \
+--account="0xcdb7c231505787c5072456b26375a65ef786b0aee5154fd6868c51b37e80cb03,10000000000000000000000" \
+--account="0xfe1e0d82f17d8f1cb9d367d1c9da658e3cec9e7c606e71002c1c6035795136e5,10000000000000000000000" \
+--account="0xcc3919c486607399f477c2fcd7b6be2bbe9d41ef8b71a186d91f1304270b071a,10000000000000000000000" \
+--account="0xc839d2f66725afec6abd20fe6d8280509b38883e0feba88dc7bba424af1f7961,10000000000000000000000" \
+--account="0xa06c1fb8aa878d2422bbd5160647200193eea944b51abc883b18a04aa31ec439,10000000000000000000000" \
+--account="0x3fa1f74e81ebf44563c8b5bb0bf906329ccfae7124061efa76fdb414c3763de8,10000000000000000000000" \
+--account="0xb6cd2f594a8d5cc63e4fc6d848d2fb941f93553d98480f2ed3698b4cd4819f90,10000000000000000000000" \
+--account="0xc0374758d50f5e3e05d08c66ae096d54798154b09f9a923cdbfd9967e66dcd99,10000000000000000000000" \
+--account="0x7bf58b0dc30ba5e3335df25f6b4d6228687cfcfc9d4f6da450be15e2d2cd81c9,10000000000000000000000" \
+--account="0x75b12ee4417aa93e523e815732d3f9d45ef7eb808c3f8e04c6da3dab25992082,10000000000000000000000"
+
+// In a Node console
+p0="0xe76ecb9e897190c3b1617dbb1705d95445e84505"
+p1="0x212d78e23d62260fe5bb2d777c010abb9f915025"
+p2="0x99feee8d4201caa859fc4edbcd964ec91c387353"
+p3="0xccda43ec2cf311b1480ec732a8408f470e345afb"
+p4="0x6cdf950fe8d244795bc1c5a36253c71f188901ed"
+p5="0x838a3dcc42110a7833d7beee4c79d093680cf724"
+p6="0x966088b1cc85d4acb994ffac06d454f3f561ac9f"
+p7="0x38c1d1201fa8ef32e2d2c901383fbe6cae4cdb43"
+p8="0xc17bc6209e102bf486c8937229f992fab3cd5273"
+p9="0xb3d3ae73456aca79e93b5cf8f3210b79750b8f02"
+
+s0="0xcdb7c231505787c5072456b26375a65ef786b0aee5154fd6868c51b37e80cb03"
+s1="0xfe1e0d82f17d8f1cb9d367d1c9da658e3cec9e7c606e71002c1c6035795136e5"
+s2="0xcc3919c486607399f477c2fcd7b6be2bbe9d41ef8b71a186d91f1304270b071a"
+s3="0xc839d2f66725afec6abd20fe6d8280509b38883e0feba88dc7bba424af1f7961"
+s4="0xa06c1fb8aa878d2422bbd5160647200193eea944b51abc883b18a04aa31ec439"
+s5="0x3fa1f74e81ebf44563c8b5bb0bf906329ccfae7124061efa76fdb414c3763de8"
+s6="0xb6cd2f594a8d5cc63e4fc6d848d2fb941f93553d98480f2ed3698b4cd4819f90"
+s7="0xc0374758d50f5e3e05d08c66ae096d54798154b09f9a923cdbfd9967e66dcd99"
+s8="0x7bf58b0dc30ba5e3335df25f6b4d6228687cfcfc9d4f6da450be15e2d2cd81c9"
+s9="0x75b12ee4417aa93e523e815732d3f9d45ef7eb808c3f8e04c6da3dab25992082"
+
+var mediciUtils = require('./lib/medici');
+var medici = mediciUtils.init('../contracts/AdExchange.sol');
+var crypto = require('./lib/crypto');
+var utils = require('ethereumjs-util');
+
+sig = crypto.sign(s0, 'http://localhost:4000')
+vrs = utils.fromRpcSig(sig)
+medici.registerAdvertiser("http://localhost:4000", vrs.v, utils.bufferToHex(vrs.r), utils.bufferToHex(vrs.s), {from: p0})
+
+sig = crypto.sign(s1, 'http://localhost:5000')
+vrs = utils.fromRpcSig(sig)
+medici.registerAdvertiser("http://localhost:5000", vrs.v, utils.bufferToHex(vrs.r), utils.bufferToHex(vrs.s), {from: p1})
+
+
+medici.registerPublisher({from: p8})
+medici.registerPublisher({from: p9})
+
+medici.deposit({from: p0, value:100})
+medici.deposit({from: p1, value:100})
+
+// starting offchain servers:
+// bidding server
+npm start
+
+// advertiser servers
+PORT=4000 SK=0xcdb7c231505787c5072456b26375a65ef786b0aee5154fd6868c51b37e80cb03 npm start
+PORT=5000 SK=0xfe1e0d82f17d8f1cb9d367d1c9da658e3cec9e7c606e71002c1c6035795136e5 npm start
+
+// publisher server
+PORT=4444 SK=0x7bf58b0dc30ba5e3335df25f6b4d6228687cfcfc9d4f6da450be15e2d2cd81c9 PK=0xc17bc6209e102bf486c8937229f992fab3cd5273 npm start
+
+
+
+
+
+// crypto.verify('0xe76ecb9e897190c3b1617dbb1705d95445e84505', "http://localhost:4000", '0x194c2272d8c7d8fa8618b66003b09a91705b5cbcceeb930c72ee5f521ccd3ae06e7685f720494ff43c86a773ded32d9df442e5cb27f34069766ea0b5d643ecff01')

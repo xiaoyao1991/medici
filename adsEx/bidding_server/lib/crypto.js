@@ -44,9 +44,3 @@ module.exports = {
     return soliditySha3(msg);
   }
 };
-
-// var sk = "cdb7c231505787c5072456b26375a65ef786b0aee5154fd6868c51b37e80cb03";
-// var pk = "e76ecb9e897190c3b1617dbb1705d95445e84505";
-// var vrs = crypto.sign(sk, "hello");
-// var verified = crypto.verify(pk, "hello", vrs);
-// console.log(verified);
