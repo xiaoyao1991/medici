@@ -6,7 +6,8 @@ var mediciUtils = require('../lib/medici');
 var crypto = require('../lib/crypto');
 var request = require('superagent');
 
-var medici = mediciUtils.init('/Users/xiaoyaoqian/projects/cs598am/medici/adsEx/contracts/AdExchange.sol');
+var contract_src = process.env.CONTRACT;
+var medici = mediciUtils.init(contract_src);
 
 var sk = process.env.SK;
 var pk = process.env.PK;
@@ -25,8 +26,6 @@ router.post('/', function(req, res, next) {
       "eventId": eventId,
       "sig": sig
     }).then(function(resp, err){
-      console.log(resp);
-      console.log(err);
       unclaimedTokens.push(resp);
       return res.json({
         "ad": resp.body.ad

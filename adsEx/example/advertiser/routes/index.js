@@ -3,7 +3,8 @@ var router = express.Router();
 var mediciUtils = require('../lib/medici');
 var crypto = require('../lib/crypto');
 
-var medici = mediciUtils.init('/Users/xiaoyaoqian/projects/cs598am/medici/adEx/contracts/AdExchange.sol');
+var contract_src = process.env.CONTRACT;
+var medici = mediciUtils.init(contract_src);
 
 var biddingExpectation = {};
 var bidIds = {};

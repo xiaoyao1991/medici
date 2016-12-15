@@ -5,7 +5,8 @@ var crypto = require('../lib/crypto');
 var _ = require("lodash");
 var request = require('superagent');
 
-var medici = mediciUtils.init('/Users/xiaoyaoqian/projects/cs598am/medici/adsEx/contracts/AdExchange.sol');
+var contract_src = process.env.CONTRACT;
+var medici = mediciUtils.init(contract_src);
 var BID = 1;
 var FOLD = -1;
 
