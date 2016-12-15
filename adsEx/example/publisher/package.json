@@ -1,5 +1,5 @@
 {
-  "name": "publisher",
+  "name": "advertiser",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -17,6 +17,7 @@
     "promise": "^7.1.1",
     "serve-favicon": "~2.3.0",
     "superagent": "^3.2.1",
-    "web3": "^0.17.0-beta"
+    "web3": "^0.17.0-beta",
+    "left-pad": "~1.1.3"
   }
 }
