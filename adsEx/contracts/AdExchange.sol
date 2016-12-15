@@ -63,19 +63,14 @@ contract AdExchange {
   }
 
   function deposit()
-    /*payable*/
+    payable
     isRegisteredAdvertiser
   {
     DepositEntry[] entryList = depositTable[msg.sender];
 
     for(uint i = 0; i<entryList.length; i++) {
-      entryList[i] = DepositEntry({
-        recipient: entryList[i].recipient,
-        amount: entryList[i].amount + msg.value * publisherWeighting[i] / 1000
-      });
+      depositTable[msg.sender][i].amount += msg.value / entryList.length;
     }
-
-    depositTable[msg.sender] = entryList;
   }
 
   function findAvailableAdvertisersByPublisher(address publisher) constant returns (address[]) {
