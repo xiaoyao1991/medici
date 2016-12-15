@@ -3,7 +3,7 @@ var router = express.Router();
 var mediciUtils = require('../lib/medici');
 var crypto = require('../lib/crypto');
 
-var medici = mediciUtils.init();
+var medici = mediciUtils.init('/Users/xiaoyaoqian/projects/cs598am/medici/adsEx/contracts/AdExchange.sol');
 
 var biddingExpectation = {};
 var bidIds = {};
@@ -13,7 +13,7 @@ var FOLD = -1;
 
 var sk = process.env.SK;
 
-router.get('/', function(req, res, next) {
+router.post('/', function(req, res, next) {
   var publisher = req.body.publisherPk;
   var eventId = req.body.eventId;
   var currentBid = req.body.currentBid;
@@ -37,6 +37,17 @@ router.get('/', function(req, res, next) {
   var stub = publisher + "|" + bidId + "|" + currentBlockId + "|" + amt + "|" + ads;
   var sig = crypto.sign(sk, stub);
 
+  console.log({
+    "resp": BID,
+    "receiver": publisher,
+    "eventId": eventId,
+    "bidId": bidId,
+    "amt": amt,
+    "ads": ads,
+    "currentBlockId": currentBlockId,
+    "sig": sig
+  });
+  
   res.json({
     "resp": BID,
     "receiver": publisher,

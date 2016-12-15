@@ -3,11 +3,9 @@ var router = express.Router();
 var mediciUtils = require('../lib/medici');
 var crypto = require('../lib/crypto');
 var _ = require("lodash");
+var request = require('superagent');
 
-var Promise = this.Promise || require('promise');
-var agent = require('superagent-promise')(require('superagent'), Promise);
-
-var medici = mediciUtils.init();
+var medici = mediciUtils.init('/Users/xiaoyaoqian/projects/cs598am/medici/adsEx/contracts/AdExchange.sol');
 var BID = 1;
 var FOLD = -1;
 
@@ -37,11 +35,13 @@ router.post('/ask/', function(req, res, next) {
 });
 
 function pollBids(competitors, pkToCallback, pkToBidIds, currentBid, highestBidResp, publisherPk, eventId, res) {
+  console.log("Polling...", competitors);
+
   if (competitors.length == 0) {
     res.sendStatus(404);
   }
 
-  if (competitors.length == 1) {
+  if (competitors.length == 1 && highestBidResp != null) {
     res.json(highestBidResp);
   }
 
@@ -49,36 +49,39 @@ function pollBids(competitors, pkToCallback, pkToBidIds, currentBid, highestBidR
   for (var i=0; i<competitors.length; i++) {
     var pk = competitors[i];
     var callback = pkToCallback[pk];
-    var promise = agent.post(callback, {
-      "publisherPk": publisherPk,
-      "eventId": eventId,
-      "currentBid": currentBid
-    }).end();
+    var promise = request
+      .post(callback)
+      .send({
+        "publisherPk": publisherPk,
+        "eventId": eventId,
+        "currentBid": currentBid
+      });
 
     promises.push(promise);
   }
 
-  var newCurrentBid = currentBid;
-  var newHighestBidResp = null;
-
   Promise.all(promises).then(function(values) {
+    var newCurrentBid = currentBid;
+    var newHighestBidResp = null;
     var newCompetitors = [];
     for (var i=0; i<values.length; i++) {
       var pk = competitors[i];
-      if (values[i].resp == FOLD) {
+      if (values[i].body.resp == FOLD) {
         continue;
       }
 
       // validate sigs
 
       newCompetitors.push(pk);
-      if (values[i].amt > newCurrentBid) {
-        newCurrentBid = values[i].amt;
-        newHighestBidResp = values[i];
+      if (values[i].body.amt > newCurrentBid) {
+        newCurrentBid = values[i].body.amt;
+        newHighestBidResp = values[i].body;
       }
 
-      pollBids(newCompetitors, pkToCallback, pkToBidIds, newCurrentBid, newHighestBidResp, publisherPk, eventId, res);
+      console.log(values[i].body);
     }
+    console.log("new...", newHighestBidResp, newCurrentBid);
+    pollBids(newCompetitors, pkToCallback, pkToBidIds, newCurrentBid, newHighestBidResp, publisherPk, eventId, res);
   }, function(err) {
       // error occurred
       console.log(err);
