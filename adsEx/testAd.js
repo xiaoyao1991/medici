@@ -96,25 +96,37 @@ module.exports = function(callback) {
     console.log("after deposit: "+ balance);
     console.log("-----------Deposit info for advertiser1("+advertiser1+")---------------" );
     contract.getDepositInfo(advertiser1);
-    console.log("-----------Deposit info for advertiser1("+advertiser2+")---------------" );
-    contract.getDepositInfo(advertiser2);
-    contract.findAvailableAdvertisersByPublisher(publisher1,10000).then(console.log);
+    contract.setPublisherWeighting(1000,1500,1000);
+    contract.getDepositInfo(advertiser1);
+    // console.log("-----------Deposit info for advertiser1("+advertiser2+")---------------" );
+    // contract.getDepositInfo(advertiser2);
+    // contract.findAvailableAdvertisersByPublisher(publisher1,10000).then(console.log);
 
     //test withdraw
-    var receiverKey = publisher1;
-    var eventId = "secret";
-    var blockHeightAtBid = 1;
-    var bidId = 2;
-    var ads = "www.google.com/ads";
-    var amount = 20;
-    var paymentToken = [receiverKey, eventId, blockHeightAtBid, bidId, ads, amount];
-    //console.log(solSha3(receiverKey, eventId, blockHeightAtBid, bidId, ads, amount));
-    var vrsPayment = utils.fromRpcSig(crypto.sign(advertiser1sk, paymentToken));
-
-    var balance = web3.eth.getBalance(publisher1);
-    console.log("before deposit: "+ balance);
-    // contract.checkTokenValidity(
-    //   advertiser1,
+    // var receiverKey = publisher1;
+    // var eventId = "secret";
+    // var blockHeightAtBid = 1;
+    // var bidId = 2;
+    // var ads = "www.google.com/ads";
+    // var amount = 20;
+    // var paymentToken = [receiverKey, eventId, blockHeightAtBid, bidId, ads, amount];
+    // //console.log(solSha3(receiverKey, eventId, blockHeightAtBid, bidId, ads, amount));
+    // var vrsPayment = utils.fromRpcSig(crypto.sign(advertiser1sk, paymentToken));
+    //
+    // var balance = web3.eth.getBalance(publisher1);
+    // console.log("before deposit: "+ balance);
+    // // contract.checkTokenValidity(
+    // //   advertiser1,
+    // //   publisher1,
+    // //   eventId,
+    // //   blockHeightAtBid,
+    // //   bidId,
+    // //   ads,
+    // //   amount,
+    // //   vrsPayment.v,
+    // //   utils.bufferToHex(vrsPayment.r),
+    // //   utils.bufferToHex(vrsPayment.s)).then(console.log);
+    // contract.withdraw(advertiser1,
     //   publisher1,
     //   eventId,
     //   blockHeightAtBid,
@@ -123,35 +135,14 @@ module.exports = function(callback) {
     //   amount,
     //   vrsPayment.v,
     //   utils.bufferToHex(vrsPayment.r),
-    //   utils.bufferToHex(vrsPayment.s)).then(console.log);
-    contract.withdraw(advertiser1,
-      publisher1,
-      eventId,
-      blockHeightAtBid,
-      bidId,
-      ads,
-      amount,
-      vrsPayment.v,
-      utils.bufferToHex(vrsPayment.r),
-      utils.bufferToHex(vrsPayment.s),
-      {from:publisher1})
-      balance = web3.eth.getBalance(publisher1);
-      console.log("after deposit: "+ balance);
-    contract.getWithDrawHistory()
+    //   utils.bufferToHex(vrsPayment.s),
+    //   {from:publisher1})
+    //   balance = web3.eth.getBalance(publisher1);
+    //   console.log("after deposit: "+ balance);
+    // contract.getWithDrawHistory()
 
     //console.log("local:\n" + "digest: 0x" + crypto.sha(paymentToken) + ", v: "+vrsPayment.v+", r: "+utils.bufferToHex(vrsPayment.r)+", s: "+utils.bufferToHex(vrsPayment.s))
 
-    // contract.deposit({from: advertiser1, value:100000})
-    // var rtv = contract.getDeposit({from:advertiser1})//.then(console.log);
-    // console.log(rtv.then(console.log))
-    // contract.debugAdd().then(console.log)
-    // contract.debug().then(console.log)
-    //contract.depositTable(advertiser1,advertiser1).then(console.log)
-  //  eth.sendTransaction({from: advertiser1, to: publisher1, value:200})
-    // contract.bob().then(console.log)
-    // contract.publisherList(0).then(console.log)
-    // contract.publisherWeighting(0).then(console.log)
-    // contract.test().then(console.log)
 
 
   }

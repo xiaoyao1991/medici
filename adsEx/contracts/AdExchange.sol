@@ -66,6 +66,11 @@ contract AdExchange {
     }
   }
 
+  function setPublisherWeighting(uint[] newWeighting) {
+    for(uint i = 0; i<publisherList.length; i++){
+      publisherWeighting[publisherList[i]] = newWeighting[i];
+    }
+  }
 
   // ======================================================== advertiser
   struct Advertiser {
@@ -141,7 +146,7 @@ contract AdExchange {
 
     uint totalDepositAmount = 0;
     for(uint i = 0; i<entryList.length; i++) {
-      uint amountEach = msg.value/entryList.length * publisherWeighting[i];
+      uint amountEach = msg.value * publisherWeighting[entryList[i].recipient]/publisherWeightingTotal;
       entryList[i] = DepositEntry({
         recipient: entryList[i].recipient,
         amount: entryList[i].amount + amountEach
@@ -181,7 +186,8 @@ contract AdExchange {
   // ======================================================== publisher
   address[] public publisherList;
   mapping(address => bool) public publisherDedup;
-  uint[] public publisherWeighting;
+  mapping(address => uint) public publisherWeighting;
+  uint publisherWeightingTotal = 0;
 
   modifier isNewPublisher(){
     if(publisherDedup[msg.sender]) throw;
@@ -206,7 +212,8 @@ contract AdExchange {
     }
     publisherList.push(msg.sender);
     publisherDedup[msg.sender] = true;
-    publisherWeighting.push(1);
+    publisherWeighting[msg.sender] = 1000;
+    publisherWeightingTotal += 1000;
   }
 
   function isPublisherExist(address publisher) constant returns (bool) {
@@ -236,6 +243,12 @@ contract AdExchange {
       {
         return false;
       }
+      if (withdrawHistoryTable[eventId].exist){
+        return false;
+      }
+      if (blockHeightAtBid + tov >= block.number){
+        return false;
+      }
       DepositEntry[] entryList = depositTable[payerKey];
       for(uint i = 0; i<entryList.length; i++) {
         if(entryList[i].recipient == receiverKey)
@@ -247,7 +260,7 @@ contract AdExchange {
             return false;
           }
         }
-      }
+      }    
       return false;
   }
 
@@ -304,12 +317,36 @@ contract AdExchange {
       eventId: eventId,
       exist: true
     });
+
+    //adjust weighting
+    publisherWeighting[receiverKey]++;
+    publisherWeightingTotal++;
   }
 
 
 
   function DDA() {
-    //TODO -- should called by advertiser to adjust deposit balancing
+    address advertiser = msg.sender;
+    //should called by advertiser to adjust deposit balancing
+    DepositEntry[] entryList = depositTable[advertiser];
+    uint total = 0;
+    for(uint i = 0; i<entryList.length; i++) {
+      total+=entryList[i].amount;
+    }
+    uint totalDepositAmount = 0;
+    for(i = 0; i<entryList.length; i++) {
+      uint amountEach = total * publisherWeighting[entryList[i].recipient]/publisherWeightingTotal;
+      entryList[i] = DepositEntry({
+        recipient: entryList[i].recipient,
+        amount: entryList[i].amount + amountEach
+      });
+      totalDepositAmount += amountEach;
+    }
+    depositTable[msg.sender] = entryList;
+    //return the individable changes
+    if (!msg.sender.send(total-totalDepositAmount)) {
+      throw;
+    }
   }
 
 }
