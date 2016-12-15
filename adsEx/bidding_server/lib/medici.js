@@ -10,9 +10,9 @@ module.exports = {
 
       // solidity code code
       var source = fs.readFileSync(solidity_src_file, 'utf8');
-      source = _.replace(source, "_;", "_")
+      source = _.replace(source, /_;/g, "_")
+      source = _.replace(source, /payable/g, " ")
       source = _.join(source.split("\n").slice(1), "\n");
-      console.log(source);
       var compiled = web3.eth.compile.solidity(source);
       var abi = compiled.info.abiDefinition;
 
@@ -20,7 +20,7 @@ module.exports = {
 
       // create contract
       var Medici = web3.eth.contract(abi);
-      return Medici.at("0xbd09a57b705f3fb17c44d3f5460d6cb2e6b91bbd");
+      return Medici.at("0xa2736c2e94420c5ccb01cac349a341f45f93048c");
     },
     getCurrentBlock: function() {
       return web3.eth.blockNumber;

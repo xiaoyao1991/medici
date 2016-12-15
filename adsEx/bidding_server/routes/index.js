@@ -1,77 +1,88 @@
 var express = require('express');
 var router = express.Router();
-var mediciInit = require('../lib/medici');
+var mediciUtils = require('../lib/medici');
 var crypto = require('../lib/crypto');
-var request = require('superagent');
 var _ = require("lodash");
 
-var medici = mediciInit.init();
+var Promise = this.Promise || require('promise');
+var agent = require('superagent-promise')(require('superagent'), Promise);
+
+var medici = mediciUtils.init();
 var BID = 1;
 var FOLD = -1;
-
-router.get('/:num', function(req, res, next) {
-  resp = medici.multiply(req.params['num']).toString(10);
-  res.json({"*7": resp});
-});
 
 router.post('/ask/', function(req, res, next) {
   var publisherPk = req.body.pk;
   var eventId = req.body.eventId;
 
   // verify this publisher is known
-  console.log(medici.isPublisherExist(publisherPk));
   if (!medici.isPublisherExist(publisherPk)) {
     res.sendStatus(401);
   }
   // get the list of advertisers
   var availableAdvertisers = medici.findAvailableAdvertisersByPublisher(publisherPk);
-  console.log(availableAdvertisers);
   if (availableAdvertisers.length == 0) {
     res.sendStatus(404);  //no willing bids
   }
 
   var pkToCallback = {};
+  var pkToBidIds = {};
   for (var i=0; i<availableAdvertisers.length; i++) {
     var callback = medici.getCallbackByAdvertiser(availableAdvertisers[i]);
     pkToCallback[availableAdvertisers[i]] = callback;
+    pkToBidIds[availableAdvertisers[i]] = -1;
   }
 
-  var competitors = availableAdvertisers;
-  var currentBid = 0;
-  while (competitors.length > 1) {
-    var nextRoundCompetitors = competitors;
-    for (var i=0; i<competitors.length; i++) {
-      var pk = competitors[i];
-      var callback = pkToCallback[pk];
-      request //async call????
-        .post(callback)
-        .send({
-          "publisherPk": publisherPk,
-          "eventId": eventId,
-          "currentBid": currentBid
-        })
-        .end(function(err, res){
-          if (!err) {
-            if (res.resp == BID) {
-
-            } else {
-              _.remove(nextRoundCompetitors, function(n) {
-                return n == pk;
-              });
-            }
-          }
-        });
-    }
-  }
-
-
-    // Receiver’s public key
-    // Current block ID(as timestamp), validate it
-    // bid id
-    // Amount
-    // The actual ads
-
-  // send the winning bid to publisher
+  pollBids(availableAdvertisers, pkToCallback, pkToBidIds, 0, null, publisherPk, eventId, res);
 });
+
+function pollBids(competitors, pkToCallback, pkToBidIds, currentBid, highestBidResp, publisherPk, eventId, res) {
+  if (competitors.length == 0) {
+    res.sendStatus(404);
+  }
+
+  if (competitors.length == 1) {
+    res.json(highestBidResp);
+  }
+
+  var promises = [];
+  for (var i=0; i<competitors.length; i++) {
+    var pk = competitors[i];
+    var callback = pkToCallback[pk];
+    var promise = agent.post(callback, {
+      "publisherPk": publisherPk,
+      "eventId": eventId,
+      "currentBid": currentBid
+    }).end();
+
+    promises.push(promise);
+  }
+
+  var newCurrentBid = currentBid;
+  var newHighestBidResp = null;
+
+  Promise.all(promises).then(function(values) {
+    var newCompetitors = [];
+    for (var i=0; i<values.length; i++) {
+      var pk = competitors[i];
+      if (values[i].resp == FOLD) {
+        continue;
+      }
+
+      // validate sigs
+
+      newCompetitors.push(pk);
+      if (values[i].amt > newCurrentBid) {
+        newCurrentBid = values[i].amt;
+        newHighestBidResp = values[i];
+      }
+
+      pollBids(newCompetitors, pkToCallback, pkToBidIds, newCurrentBid, newHighestBidResp, publisherPk, eventId, res);
+    }
+  }, function(err) {
+      // error occurred
+      console.log(err);
+  });
+}
 
 module.exports = router;

@@ -1,9 +1,9 @@
 var express = require('express');
 var router = express.Router();
-var mediciInit = require('../lib/medici');
+var mediciUtils = require('../lib/medici');
 var crypto = require('../lib/crypto');
 
-var medici = mediciInit.init();
+var medici = mediciUtils.init();
 
 var biddingExpectation = {};
 var bidIds = {};
@@ -31,11 +31,11 @@ router.get('/', function(req, res, next) {
   // sign a micropayment signature and send
   var bidId = bidIds[publisher + "|" + eventId]++;
   var amt = currentBid + 1;
-  var currentBlockId = medici.getCurrentBlock();
+  var currentBlockId = mediciUtils.getCurrentBlock();
   var ads = "img1";
 
   var stub = publisher + "|" + bidId + "|" + currentBlockId + "|" + amt + "|" + ads;
-  var token = crypto.sign(sk, stub);
+  var sig = crypto.sign(sk, stub);
 
   res.json({
     "resp": BID,
@@ -45,7 +45,7 @@ router.get('/', function(req, res, next) {
     "amt": amt,
     "ads": ads,
     "currentBlockId": currentBlockId,
-    "token": token
+    "sig": sig
   });
 });
 
