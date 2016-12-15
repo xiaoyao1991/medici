@@ -8,7 +8,10 @@ var medici = mediciInit.init();
 var biddingExpectation = {};
 var bidIds = {};
 
-var sk = "";
+var BID = 1;
+var FOLD = -1;
+
+var sk = process.env.SK;
 
 router.get('/', function(req, res, next) {
   var publisher = req.body.publisherPk;
@@ -22,7 +25,7 @@ router.get('/', function(req, res, next) {
   var maxExpectedBid = biddingExpectation[publisher + "|" + eventId];
 
   if (maxExpectedBid <= currentBid) {
-    res.json({"resp": 0}); //abort
+    res.json({"resp": FOLD});
   }
 
   // sign a micropayment signature and send
@@ -35,8 +38,9 @@ router.get('/', function(req, res, next) {
   var token = crypto.sign(sk, stub);
 
   res.json({
-    "resp": 1,
+    "resp": BID,
     "receiver": publisher,
+    "eventId": eventId,
     "bidId": bidId,
     "amt": amt,
     "ads": ads,
