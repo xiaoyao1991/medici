@@ -26,7 +26,7 @@ router.post('/', function(req, res, next) {
       "eventId": eventId,
       "sig": sig
     }).then(function(resp, err){
-      unclaimedTokens.push(resp);
+      unclaimedTokens.push(resp.body);
       return res.json({
         "ad": resp.body.ad
       });
