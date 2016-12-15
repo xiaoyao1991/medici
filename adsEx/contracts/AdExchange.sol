@@ -3,8 +3,24 @@ pragma solidity ^0.4.2;
 contract AdExchange {
   uint public tov = 144; // term of validity; assuming 10min a block, that's 24hours
   event debugging(address sender, string message, uint index);
-
+  event debugSha(bytes32 digest, uint8 v, bytes32 r, bytes32 s);
+  event debugHistory(address advertiser,address publisher,uint withDrawAmount,string eventId,uint blockHeightAtBid,uint bidId,bool exist);
   //========================================================= debugging function
+  function verifySignatureNoHash(
+    address publickey,
+    address receiverKey,
+    string eventId,
+    uint blockHeightAtBid,
+    uint bidId,
+    string ads,
+    uint amount,
+    uint8 v,
+    bytes32 r,
+    bytes32 s) constant returns (bool) {
+    //debugSha(sha3(receiverKey, eventId, blockHeightAtBid, bidId, ads, amount),v,r,s);
+    return publickey == ecrecover(sha3(receiverKey, eventId, blockHeightAtBid, bidId, ads, amount),v,r,s);
+  }
+
   function bytes32ToString (bytes32 data) returns (string) {
       bytes memory bytesString = new bytes(32);
       for (uint j=0; j<32; j++) {
@@ -18,7 +34,7 @@ contract AdExchange {
 
   function getAllAdvertise(){
     for(uint i = 0; i < advertiserList.length;i++){
-      debugging(advertiserList[i].publicKey,"hah", i);
+      debugging(advertiserList[i].publicKey,advertiserList[i].callback, i);
     }
   }
   function getAllPublisher(){
@@ -28,9 +44,25 @@ contract AdExchange {
   }
   function getDepositInfo(address advertiser){
     DepositEntry[] entryList = depositTable[advertiser];
-
     for(uint i = 0; i<entryList.length; i++) {
       debugging(entryList[i].recipient,"deposit info",entryList[i].amount);
+    }
+  }
+
+  function getDepositInfoAll(){
+    for(uint j = 0; j<advertiserList.length;j++){
+      address advertiser = advertiserList[j].publicKey;
+      DepositEntry[] entryList = depositTable[advertiser];
+      for(uint i = 0; i<entryList.length; i++) {
+        debugging(entryList[i].recipient,"deposit info",entryList[i].amount);
+      }
+    }
+  }
+
+  function getWithDrawHistory(){
+    for(uint i = 0; i<eventIdList.length; i++){
+      WithdrawHistoryEntry entry = withdrawHistoryTable[eventIdList[i]];
+      debugHistory(entry.advertiser,entry.publisher,entry.withDrawAmount,entry.eventId,entry.blockHeightAtBid,entry.bidId,entry.exist);
     }
   }
 
@@ -56,10 +88,14 @@ contract AdExchange {
     bool exist;
   }
 
+  string[] eventIdList;
   Advertiser[] public advertiserList;
   mapping(address => string) public advertiserCallbacks;
   mapping(address => DepositEntry[]) depositTable;
-  mapping(address => mapping(string => WithdrawHistoryEntry)) withdrawHistoryTable;
+  mapping(string => WithdrawHistoryEntry) withdrawHistoryTable;
+
+  //NEED CONFIRM
+  mapping(address => mapping(string => WithdrawHistoryEntry)) withdrawHistoryTable2;
 
   modifier isNewAdvertiser() {
     if (bytes(advertiserCallbacks[msg.sender]).length > 0) throw;
@@ -114,25 +150,27 @@ contract AdExchange {
     }
 
     depositTable[msg.sender] = entryList;
+
     //return the change individable
     if (!msg.sender.send(msg.value-totalDepositAmount)) {
       throw;
     }
+    debugging(msg.sender,"refund amount",msg.value-totalDepositAmount);
   }
 
-  function findAvailableAdvertisersByPublisher(address publisher) constant returns (address[]) {
+  function findAvailableAdvertisersByPublisher(address publisher, uint fee) constant returns (address[]) {
     address[] memory availableAdvertisers = new address[](advertiserList.length);
     uint counter = 0;
     for (uint i=0; i<advertiserList.length; i++) {
       DepositEntry[] depositList = depositTable[advertiserList[i].publicKey];
       for (uint j=0; j<depositList.length; j++) {
-        if (depositList[j].recipient == publisher && depositList[j].amount > 0) {
+        if (depositList[j].recipient == publisher && depositList[j].amount >= fee) {
           availableAdvertisers[counter] = advertiserList[i].publicKey;
           counter++;
           break;
-        }
       }
     }
+  }
     return availableAdvertisers;
   }
 
@@ -146,10 +184,7 @@ contract AdExchange {
   uint[] public publisherWeighting;
 
   modifier isNewPublisher(){
-    if(publisherDedup[msg.sender]) {
-        //debugging(msg.sender, "deuplicate publisher");
-        throw;
-    }
+    if(publisherDedup[msg.sender]) throw;
     _;
   }
 
@@ -178,19 +213,7 @@ contract AdExchange {
     return publisherDedup[publisher];
   }
 
-  function getDeposit() constant returns(address[],uint[]) {
-    address publickey = msg.sender;
-    address[] memory adds = new address[](advertiserList.length);
-  //  adds[0] = entryRow[0].recipient;
-    uint[] memory deposits = new uint[](advertiserList.length);
-  //  deposits[0] = 0;
-    DepositEntry[] entryRow = depositTable[publickey];
-    for(uint i = 0; i<advertiserList.length; i++){
-      adds[i] = entryRow[i].recipient;
-      deposits[i] = entryRow[i].amount;
-    }
-    return (adds, deposits);
-  }
+
 
   function verifySignature(address publickey, bytes32 hashedData, uint8 v, bytes32 r, bytes32 s) internal returns (bool) {
     return publickey == ecrecover(hashedData,v,r,s);
@@ -198,6 +221,35 @@ contract AdExchange {
 
   //publisher withdraw payment
   event Withdrawn();
+
+  function checkTokenValidity(address payerKey,
+    address receiverKey,
+    string eventId,
+    uint blockHeightAtBid,
+    uint bidId,
+    string ads,
+    uint amount,
+    uint8 v,
+    bytes32 r,
+    bytes32 s) constant returns(bool){
+      if (!verifySignature(payerKey, sha3(receiverKey, eventId, blockHeightAtBid, bidId, ads, amount), v,r,s))
+      {
+        return false;
+      }
+      DepositEntry[] entryList = depositTable[payerKey];
+      for(uint i = 0; i<entryList.length; i++) {
+        if(entryList[i].recipient == receiverKey)
+        {
+          if(entryList[i].amount>amount)
+          {
+            return true;
+          }else{
+            return false;
+          }
+        }
+      }
+      return false;
+  }
 
   function withdraw(
     address payerKey,
@@ -214,30 +266,37 @@ contract AdExchange {
   {
     if (blockHeightAtBid + tov >= block.number) throw;
     if (receiverKey != msg.sender) throw;
-    if (withdrawHistoryTable[receiverKey][eventId].exist) throw;
+    if (withdrawHistoryTable[eventId].exist) throw;
+    //if (withdrawHistoryTable[receiverKey][eventId].exist) throw;
     if (!verifySignature(payerKey, sha3(receiverKey, eventId, blockHeightAtBid, bidId, ads, amount), v,r,s)) throw;
-
     //Verify success send money and make record consistence
-    if (!receiverKey.send(amount)) {
-      throw;
-    }
-
-    Withdrawn();
 
     //change deposit table
     DepositEntry[] entryRows = depositTable[payerKey];
     for(uint i = 0; i<entryRows.length; i++){
       if(entryRows[i].recipient == receiverKey){
-        entryRows[i] = DepositEntry({
-          recipient: receiverKey,
-          amount: entryRows[i].amount - amount
-        });
+        //check account before sending out
+        if(entryRows[i].amount>amount){
+          entryRows[i] = DepositEntry({
+            recipient: receiverKey,
+            amount: entryRows[i].amount - amount
+          });
+          if (!receiverKey.send(amount)) {
+            throw;
+          }
+          break;
+        }else{
+          throw;
+        }
       }
     }
+    debugging(receiverKey,"Withdrawn success",amount);
+    Withdrawn();
     depositTable[payerKey] = entryRows;
 
     //add this transaction to history table
-    withdrawHistoryTable[receiverKey][eventId] = WithdrawHistoryEntry({
+    eventIdList.push(eventId);
+    withdrawHistoryTable[eventId] = WithdrawHistoryEntry({
       advertiser: payerKey,
       publisher: receiverKey,
       withDrawAmount: amount,
@@ -246,6 +305,15 @@ contract AdExchange {
       eventId: eventId,
       exist: true
     });
+    /*withdrawHistoryTable[receiverKey][eventId] = WithdrawHistoryEntry({
+      advertiser: payerKey,
+      publisher: receiverKey,
+      withDrawAmount: amount,
+      blockHeightAtBid: blockHeightAtBid,
+      bidId:bidId,
+      eventId: eventId,
+      exist: true
+    });*/
   }
 
 
