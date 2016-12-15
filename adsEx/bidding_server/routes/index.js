@@ -15,12 +15,12 @@ router.post('/ask/', function(req, res, next) {
 
   // verify this publisher is known
   if (!medici.isPublisherExist(publisherPk)) {
-    res.sendStatus(401);
+    return res.sendStatus(401);
   }
   // get the list of advertisers
   var availableAdvertisers = medici.findAvailableAdvertisersByPublisher(publisherPk);
   if (availableAdvertisers.length == 0) {
-    res.sendStatus(404);  //no willing bids
+    return res.sendStatus(404);  //no willing bids
   }
 
   var pkToCallback = {};
@@ -38,11 +38,12 @@ function pollBids(competitors, pkToCallback, pkToBidIds, currentBid, highestBidR
   console.log("Polling...", competitors);
 
   if (competitors.length == 0) {
-    res.sendStatus(404);
+    return res.sendStatus(404);
   }
 
   if (competitors.length == 1 && highestBidResp != null) {
-    res.json(highestBidResp);
+    highestBidResp['advertiser'] = competitors[0];
+    return res.json(highestBidResp);
   }
 
   var promises = [];
