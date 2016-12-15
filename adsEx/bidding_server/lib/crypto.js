@@ -25,9 +25,8 @@ var soliditySha3 = function(args) {
 module.exports = {
   sign: function(prvkey, msg) {
     if (utils.isHexPrefixed(prvkey)) {
-     prvkey = utils.stripHexPrefix(prvkey);
-   }
-   var vrs = utils.ecsign(utils.sha3(msg), new Buffer(prvkey, "hex"));
+      prvkey = utils.stripHexPrefix(prvkey);
+    }
     var vrs = utils.ecsign(new Buffer(soliditySha3(msg),"hex"), new Buffer(prvkey, "hex"));
     return utils.toRpcSig(vrs.v, vrs.r, vrs.s);
   },
@@ -44,8 +43,6 @@ module.exports = {
   soliditySha3: function(msg){
     return soliditySha3(msg);
   }
-
-
 };
 
 // var sk = "cdb7c231505787c5072456b26375a65ef786b0aee5154fd6868c51b37e80cb03";

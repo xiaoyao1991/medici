@@ -267,7 +267,6 @@ contract AdExchange {
     if (blockHeightAtBid + tov >= block.number) throw;
     if (receiverKey != msg.sender) throw;
     if (withdrawHistoryTable[eventId].exist) throw;
-    //if (withdrawHistoryTable[receiverKey][eventId].exist) throw;
     if (!verifySignature(payerKey, sha3(receiverKey, eventId, blockHeightAtBid, bidId, ads, amount), v,r,s)) throw;
     //Verify success send money and make record consistence
 
@@ -305,15 +304,6 @@ contract AdExchange {
       eventId: eventId,
       exist: true
     });
-    /*withdrawHistoryTable[receiverKey][eventId] = WithdrawHistoryEntry({
-      advertiser: payerKey,
-      publisher: receiverKey,
-      withDrawAmount: amount,
-      blockHeightAtBid: blockHeightAtBid,
-      bidId:bidId,
-      eventId: eventId,
-      exist: true
-    });*/
   }
 
 
