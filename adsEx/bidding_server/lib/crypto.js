@@ -15,7 +15,6 @@ var soliditySha3 = function(args) {
               formatedArgs.push(web3.toHex(arg).slice(2))
           }
       }
-
       if (typeof arg === 'number') {
           formatedArgs.push(leftPad((arg).toString(16), 64, 0))
       }
@@ -25,6 +24,10 @@ var soliditySha3 = function(args) {
 }
 module.exports = {
   sign: function(prvkey, msg) {
+    if (utils.isHexPrefixed(prvkey)) {
+     prvkey = utils.stripHexPrefix(prvkey);
+   }
+   var vrs = utils.ecsign(utils.sha3(msg), new Buffer(prvkey, "hex"));
     var vrs = utils.ecsign(new Buffer(soliditySha3(msg),"hex"), new Buffer(prvkey, "hex"));
     return utils.toRpcSig(vrs.v, vrs.r, vrs.s);
   },
@@ -38,7 +41,7 @@ module.exports = {
       return pubkey == utils.stripHexPrefix(pubaddr);
     }
   },
-  sha: function(msg){
+  soliditySha3: function(msg){
     return soliditySha3(msg);
   }
 
