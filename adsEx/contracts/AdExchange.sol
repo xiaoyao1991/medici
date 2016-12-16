@@ -260,7 +260,7 @@ contract AdExchange {
             return false;
           }
         }
-      }    
+      }
       return false;
   }
 
@@ -277,7 +277,7 @@ contract AdExchange {
     bytes32 s)
     isRegisteredPublisher
   {
-    if (blockHeightAtBid + tov >= block.number) throw;
+    if (blockHeightAtBid + tov < block.number) throw;
     if (receiverKey != msg.sender) throw;
     if (withdrawHistoryTable[eventId].exist) throw;
     if (!verifySignature(payerKey, sha3(receiverKey, eventId, blockHeightAtBid, bidId, ads, amount), v,r,s)) throw;

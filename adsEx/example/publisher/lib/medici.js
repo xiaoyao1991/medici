@@ -20,7 +20,7 @@ module.exports = {
 
       // create contract
       var Medici = web3.eth.contract(abi);
-      return Medici.at("0xd1920bea6ea52e9d6cd3b7aba3c4d82d914f9bcb");
+      return Medici.at("0xa86110fd409404b8d190d867f1cc89a7e35624e4");
     },
     getCurrentBlock: function() {
       return web3.eth.blockNumber;

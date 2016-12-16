@@ -12,8 +12,14 @@ var bidIds = {};
 var BID = 1;
 var FOLD = -1;
 
+var ads = {
+  "nike": '<img src="http://modernmediamix.com/wp-content/uploads/2013/04/NIKE.jpg"/>',
+  "adidas": '<img src="https://pbs.twimg.com/profile_images/734704098390462464/Ufr0bXrH.jpg"/>'
+}
+
 var sk = process.env.SK;
 var pk = process.env.PK;
+var brand = process.env.BRAND;
 
 router.post('/', function(req, res, next) {
   var publisher = req.body.publisherPk;
@@ -33,9 +39,9 @@ router.post('/', function(req, res, next) {
   // sign a micropayment signature and send
   var bidId = bidIds[publisher + "|" + eventId]++;
   var amt = currentBid + 1;
+  var ad = ads[brand];
   var currentBlockId = mediciUtils.getCurrentBlock();
-  var ad = "img1";
-  var sig = crypto.sign(sk, [publisher, bidId, currentBlockId, amt, ad]);
+  var sig = crypto.sign(sk, [publisher, eventId, currentBlockId, bidId, ad, amt]);
 
   var resp = {
     "resp": BID,
