@@ -16,8 +16,8 @@ var BIDDING_SERVER = "http://localhost:3000/medici/ask";
 var unclaimedTokens = [];
 
 router.post('/', function(req, res, next) {
-  var eventId = utils.bufferToHex(utils.sha3(pk + Date.now()));
-  var sig = crypto.sign(sk, eventId);
+  var eventId = utils.stripHexPrefix(utils.bufferToHex(utils.sha3(pk + Date.now())));
+  var sig = crypto.sign(sk, [eventId]);
 
   request
     .post(BIDDING_SERVER)
@@ -31,6 +31,13 @@ router.post('/', function(req, res, next) {
         "ad": resp.body.ad
       });
     });
+});
+
+router.get("/tokens", function(req, res, next) {
+  var tokens = unclaimedTokens;
+  unclaimedTokens = [];
+
+  return res.json(tokens);
 });
 
 module.exports = router;
