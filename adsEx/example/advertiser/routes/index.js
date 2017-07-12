@@ -4,7 +4,8 @@ var mediciUtils = require('../lib/medici');
 var crypto = require('../lib/crypto');
 
 var contract_src = process.env.CONTRACT;
-var medici = mediciUtils.init(contract_src);
+var deployedAt = process.env.DEPLOYEDAT;
+var medici = mediciUtils.init(contract_src, deployedAt);
 
 var biddingExpectation = {};
 var bidIds = {};

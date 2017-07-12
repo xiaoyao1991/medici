@@ -6,7 +6,8 @@ var _ = require("lodash");
 var request = require('superagent');
 
 var contract_src = process.env.CONTRACT;
-var medici = mediciUtils.init(contract_src);
+var deployedAt = process.env.DEPLOYEDAT;
+var medici = mediciUtils.init(contract_src, deployedAt);
 var BID = 1;
 var FOLD = -1;
 

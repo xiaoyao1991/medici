@@ -6,9 +6,6 @@ var mediciUtils = require('../lib/medici');
 var crypto = require('../lib/crypto');
 var request = require('superagent');
 
-var contract_src = process.env.CONTRACT;
-var medici = mediciUtils.init(contract_src);
-
 var sk = process.env.SK;
 var pk = process.env.PK;
 var BIDDING_SERVER = "http://localhost:3000/medici/ask";

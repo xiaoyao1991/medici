@@ -36,7 +36,7 @@ s8="0x7bf58b0dc30ba5e3335df25f6b4d6228687cfcfc9d4f6da450be15e2d2cd81c9"
 s9="0x75b12ee4417aa93e523e815732d3f9d45ef7eb808c3f8e04c6da3dab25992082"
 
 var mediciUtils = require('./lib/medici');
-var medici = mediciUtils.init('../contracts/AdExchange.sol');
+var medici = mediciUtils.init('../contracts/AdExchange.sol', '0x6ea951d3380ccec0eccd14d482238c84bd270485');
 var crypto = require('./lib/crypto');
 var utils = require('ethereumjs-util');
 
@@ -56,11 +56,11 @@ medici.deposit({from: p1, value:100})
 
 // starting offchain servers:
 // bidding server
-npm start
+CONTRACT=~/projects/cs598am/medici/adsEx/contracts/AdExchange.sol DEPLOYEDAT=0x6ea951d3380ccec0eccd14d482238c84bd270485 npm start
 
 // advertiser servers
-PORT=4000 SK=0xcdb7c231505787c5072456b26375a65ef786b0aee5154fd6868c51b37e80cb03 npm start
-PORT=5000 SK=0xfe1e0d82f17d8f1cb9d367d1c9da658e3cec9e7c606e71002c1c6035795136e5 npm start
+PORT=4000 SK=0xcdb7c231505787c5072456b26375a65ef786b0aee5154fd6868c51b37e80cb03 CONTRACT=~/projects/cs598am/medici/adsEx/contracts/AdExchange.sol DEPLOYEDAT=0x6ea951d3380ccec0eccd14d482238c84bd270485 BRAND=nike npm start
+PORT=5000 SK=0xfe1e0d82f17d8f1cb9d367d1c9da658e3cec9e7c606e71002c1c6035795136e5 CONTRACT=~/projects/cs598am/medici/adsEx/contracts/AdExchange.sol DEPLOYEDAT=0x6ea951d3380ccec0eccd14d482238c84bd270485 BRAND=adidas npm start
 
 // publisher server
 PORT=4444 SK=0x7bf58b0dc30ba5e3335df25f6b4d6228687cfcfc9d4f6da450be15e2d2cd81c9 PK=0xc17bc6209e102bf486c8937229f992fab3cd5273 npm start

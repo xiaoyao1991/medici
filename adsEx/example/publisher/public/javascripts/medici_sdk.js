@@ -3,7 +3,7 @@ $(document).ready(function() {
   for (var i=0; i<adspaces.length; i++) {
     var adspace = adspaces[i];
     $.post("http://localhost:4444", function(data) {
-      adspace.innerHTML = data.ad;
+      adspace.innerHTML = data.ad;  // yeh, I know
     });
   }
 });

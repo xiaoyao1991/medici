@@ -4,7 +4,7 @@ var _ = require("lodash");
 var web3;
 
 module.exports = {
-    init : function(solidity_src_file) {
+    init : function(solidity_src_file, deployed_address) {
       web3 = new Web3();
       web3.setProvider(new web3.providers.HttpProvider("http://localhost:8545"));
 
@@ -20,7 +20,7 @@ module.exports = {
 
       // create contract
       var Medici = web3.eth.contract(abi);
-      return Medici.at("0xa86110fd409404b8d190d867f1cc89a7e35624e4");
+      return Medici.at(deployed_address);
     },
     getCurrentBlock: function() {
       return web3.eth.blockNumber;
