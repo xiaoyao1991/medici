@@ -35,16 +35,15 @@ s7="0xc0374758d50f5e3e05d08c66ae096d54798154b09f9a923cdbfd9967e66dcd99"
 s8="0x7bf58b0dc30ba5e3335df25f6b4d6228687cfcfc9d4f6da450be15e2d2cd81c9"
 s9="0x75b12ee4417aa93e523e815732d3f9d45ef7eb808c3f8e04c6da3dab25992082"
 
-var mediciUtils = require('./lib/medici');
+var mediciUtils = require('medici-js');
 var medici = mediciUtils.init('../contracts/AdExchange.sol', '0x6ea951d3380ccec0eccd14d482238c84bd270485');
-var crypto = require('./lib/crypto');
 var utils = require('ethereumjs-util');
 
-sig = crypto.sign(s0, ['http://localhost:4000'])
+sig = mediciUtils.sign(s0, ['http://localhost:4000'])
 vrs = utils.fromRpcSig(sig)
 medici.registerAdvertiser("http://localhost:4000", vrs.v, utils.bufferToHex(vrs.r), utils.bufferToHex(vrs.s), {from: p0})
 
-sig = crypto.sign(s1, ['http://localhost:5000'])
+sig = mediciUtils.sign(s1, ['http://localhost:5000'])
 vrs = utils.fromRpcSig(sig)
 medici.registerAdvertiser("http://localhost:5000", vrs.v, utils.bufferToHex(vrs.r), utils.bufferToHex(vrs.s), {from: p1})
 
@@ -56,17 +55,17 @@ medici.deposit({from: p1, value:100})
 
 // starting offchain servers:
 // bidding server
-CONTRACT=~/projects/cs598am/medici/adsEx/contracts/AdExchange.sol DEPLOYEDAT=0x6ea951d3380ccec0eccd14d482238c84bd270485 npm start
+CONTRACT=../contracts/AdExchange.sol DEPLOYEDAT=0x6ea951d3380ccec0eccd14d482238c84bd270485 npm start
 
 // advertiser servers
-PORT=4000 SK=0xcdb7c231505787c5072456b26375a65ef786b0aee5154fd6868c51b37e80cb03 CONTRACT=~/projects/cs598am/medici/adsEx/contracts/AdExchange.sol DEPLOYEDAT=0x6ea951d3380ccec0eccd14d482238c84bd270485 BRAND=nike npm start
-PORT=5000 SK=0xfe1e0d82f17d8f1cb9d367d1c9da658e3cec9e7c606e71002c1c6035795136e5 CONTRACT=~/projects/cs598am/medici/adsEx/contracts/AdExchange.sol DEPLOYEDAT=0x6ea951d3380ccec0eccd14d482238c84bd270485 BRAND=adidas npm start
+PORT=4000 SK=0xcdb7c231505787c5072456b26375a65ef786b0aee5154fd6868c51b37e80cb03 CONTRACT=../../contracts/AdExchange.sol DEPLOYEDAT=0x6ea951d3380ccec0eccd14d482238c84bd270485 BRAND=nike npm start
+PORT=5000 SK=0xfe1e0d82f17d8f1cb9d367d1c9da658e3cec9e7c606e71002c1c6035795136e5 CONTRACT=../../contracts/AdExchange.sol DEPLOYEDAT=0x6ea951d3380ccec0eccd14d482238c84bd270485 BRAND=adidas npm start
 
 // publisher server
 PORT=4444 SK=0x7bf58b0dc30ba5e3335df25f6b4d6228687cfcfc9d4f6da450be15e2d2cd81c9 PK=0xc17bc6209e102bf486c8937229f992fab3cd5273 npm start
 
 
-
+// debug==================
 token = {"resp":1,"receiver":"0xc17bc6209e102bf486c8937229f992fab3cd5273","eventId":"855415a521793b61b3979561ad3649fcba0298a111317e5b9101223e9f3bb5d9","bidId":6,"amt":7,"ad":"<img src=\"https://pbs.twimg.com/profile_images/734704098390462464/Ufr0bXrH.jpg\"/>","currentBlockId":10,"sig":"0x9a189de333a8774391a24013a45e77b1d37af073a13adfa6905cbff00f15f30f795a2184e2054a0f4f16c03f505ed8065b33032b06567a312a9084b0504701b700","advertiser":"0x212d78e23d62260fe5bb2d777c010abb9f915025"}
 vrs = utils.fromRpcSig(token.sig)
 
@@ -95,11 +94,11 @@ medici.verifySignatureNoHash(
  utils.bufferToHex(vrs.s), {from: p8});
 
 
-crypto.verify('0x212d78e23d62260fe5bb2d777c010abb9f915025', [token.receiver,
+mediciUtils.verify('0x212d78e23d62260fe5bb2d777c010abb9f915025', [token.receiver,
 token.eventId,
 token.currentBlockId,
 token.bidId,
 token.ad,
 token.amt,], '0xd6ac14331b2b0d9afa9fd811db2b928bff8b96bb74cd586a94e4539b5b7d82882361eee8240f85d385d391f351369fc594e2b990cd7387987af7edd358fb658300')
 
-// crypto.verify('0xe76ecb9e897190c3b1617dbb1705d95445e84505', "http://localhost:4000", '0x194c2272d8c7d8fa8618b66003b09a91705b5cbcceeb930c72ee5f521ccd3ae06e7685f720494ff43c86a773ded32d9df442e5cb27f34069766ea0b5d643ecff01')
+// mediciUtils.verify('0xe76ecb9e897190c3b1617dbb1705d95445e84505', "http://localhost:4000", '0x194c2272d8c7d8fa8618b66003b09a91705b5cbcceeb930c72ee5f521ccd3ae06e7685f720494ff43c86a773ded32d9df442e5cb27f34069766ea0b5d643ecff01')
