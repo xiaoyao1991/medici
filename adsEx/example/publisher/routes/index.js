@@ -2,8 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 var utils = require('ethereumjs-util');
-var mediciUtils = require('../lib/medici');
-var crypto = require('../lib/crypto');
+var mediciUtils = require('medici-js');
 var request = require('superagent');
 
 var sk = process.env.SK;
@@ -14,8 +13,7 @@ var unclaimedTokens = [];
 
 router.post('/', function(req, res, next) {
   var eventId = utils.stripHexPrefix(utils.bufferToHex(utils.sha3(pk + Date.now())));
-  var sig = crypto.sign(sk, [eventId]);
-
+  var sig = mediciUtils.sign(sk, [eventId]);
   request
     .post(BIDDING_SERVER)
     .send({

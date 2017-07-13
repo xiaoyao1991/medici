@@ -9,7 +9,6 @@
     "body-parser": "~1.15.2",
     "cookie-parser": "~1.4.3",
     "debug": "~2.2.0",
-    "ethereumjs-util": "^5.0.1",
     "express": "~4.14.0",
     "jade": "~1.11.0",
     "lodash": "^4.17.2",
@@ -17,7 +16,6 @@
     "promise": "^7.1.1",
     "serve-favicon": "~2.3.0",
     "superagent": "^3.2.1",
-    "web3": "^0.17.0-beta",
-    "left-pad": "~1.1.3"
+    "medici-js": "~0.0.1"
   }
 }

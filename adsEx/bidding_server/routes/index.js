@@ -1,13 +1,11 @@
 var express = require('express');
 var router = express.Router();
-var mediciUtils = require('../lib/medici');
-var crypto = require('../lib/crypto');
-var _ = require("lodash");
+var mediciUtils = require('medici-js');
 var request = require('superagent');
 
-var contract_src = process.env.CONTRACT;
+var contractSrc = process.env.CONTRACT;
 var deployedAt = process.env.DEPLOYEDAT;
-var medici = mediciUtils.init(contract_src, deployedAt);
+var medici = mediciUtils.init(contractSrc, deployedAt);
 var BID = 1;
 var FOLD = -1;
 

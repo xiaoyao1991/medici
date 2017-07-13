@@ -1,11 +1,10 @@
 var express = require('express');
 var router = express.Router();
-var mediciUtils = require('../lib/medici');
-var crypto = require('../lib/crypto');
+var mediciUtils = require('medici-js');
 
-var contract_src = process.env.CONTRACT;
+var contractSrc = process.env.CONTRACT;
 var deployedAt = process.env.DEPLOYEDAT;
-var medici = mediciUtils.init(contract_src, deployedAt);
+var medici = mediciUtils.init(contractSrc, deployedAt);
 
 var biddingExpectation = {};
 var bidIds = {};
@@ -15,7 +14,7 @@ var FOLD = -1;
 
 var ads = {
   "nike": '<img src="http://modernmediamix.com/wp-content/uploads/2013/04/NIKE.jpg"/>',
-  "adidas": '<img src="https://pbs.twimg.com/profile_images/734704098390462464/Ufr0bXrH.jpg"/>'
+  "adidas": '<img src="http://www.adidas.com/dwstatic/aaqx_prd/on/demandware.static/Sites-adidas-US-Site/-/default/dw721d387e/images/favicons/favicon.png"/>'
 }
 
 var sk = process.env.SK;
@@ -42,7 +41,7 @@ router.post('/', function(req, res, next) {
   var amt = currentBid + 1;
   var ad = ads[brand];
   var currentBlockId = mediciUtils.getCurrentBlock();
-  var sig = crypto.sign(sk, [publisher, eventId, currentBlockId, bidId, ad, amt]);
+  var sig = mediciUtils.sign(sk, [publisher, eventId, currentBlockId, bidId, ad, amt]);
 
   var resp = {
     "resp": BID,
