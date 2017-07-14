@@ -322,31 +322,4 @@ contract AdExchange {
     publisherWeighting[receiverKey]++;
     publisherWeightingTotal++;
   }
-
-
-
-  function DDA() {
-    address advertiser = msg.sender;
-    //should called by advertiser to adjust deposit balancing
-    DepositEntry[] entryList = depositTable[advertiser];
-    uint total = 0;
-    for(uint i = 0; i<entryList.length; i++) {
-      total+=entryList[i].amount;
-    }
-    uint totalDepositAmount = 0;
-    for(i = 0; i<entryList.length; i++) {
-      uint amountEach = total * publisherWeighting[entryList[i].recipient]/publisherWeightingTotal;
-      entryList[i] = DepositEntry({
-        recipient: entryList[i].recipient,
-        amount: entryList[i].amount + amountEach
-      });
-      totalDepositAmount += amountEach;
-    }
-    depositTable[msg.sender] = entryList;
-    //return the individable changes
-    if (!msg.sender.send(total-totalDepositAmount)) {
-      throw;
-    }
-  }
-
 }

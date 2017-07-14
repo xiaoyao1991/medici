@@ -2,10 +2,7 @@ var express = require('express');
 var router = express.Router();
 var mediciUtils = require('medici-js');
 var request = require('superagent');
-
-var contractSrc = process.env.CONTRACT;
-var deployedAt = process.env.DEPLOYEDAT;
-var medici = mediciUtils.init(contractSrc, deployedAt);
+var medici = mediciUtils.init(process.env.CONTRACT, process.env.DEPLOYEDAT);
 var BID = 1;
 var FOLD = -1;
 
@@ -24,28 +21,16 @@ router.post('/ask/', function(req, res, next) {
   }
 
   var pkToCallback = {};
-  var pkToBidIds = {};
   for (var i=0; i<availableAdvertisers.length; i++) {
     var callback = medici.getCallbackByAdvertiser(availableAdvertisers[i]);
     pkToCallback[availableAdvertisers[i]] = callback;
-    pkToBidIds[availableAdvertisers[i]] = -1;
   }
 
-  pollBids(availableAdvertisers, pkToCallback, pkToBidIds, 0, null, publisherPk, eventId, res);
+  pollBids(availableAdvertisers, pkToCallback, publisherPk, eventId, res);
 });
 
-function pollBids(competitors, pkToCallback, pkToBidIds, currentBid, highestBidResp, publisherPk, eventId, res) {
+function pollBids(competitors, pkToCallback, publisherPk, eventId, res) {
   console.log("Polling...", competitors);
-
-  if (competitors.length == 0) {
-    return res.sendStatus(404);
-  }
-
-  if (competitors.length == 1 && highestBidResp != null) {
-    highestBidResp['advertiser'] = competitors[0];
-    return res.json(highestBidResp);
-  }
-
   var promises = [];
   for (var i=0; i<competitors.length; i++) {
     var pk = competitors[i];
@@ -54,17 +39,16 @@ function pollBids(competitors, pkToCallback, pkToBidIds, currentBid, highestBidR
       .post(callback)
       .send({
         "publisherPk": publisherPk,
-        "eventId": eventId,
-        "currentBid": currentBid
+        "eventId": eventId
       });
 
     promises.push(promise);
   }
 
   Promise.all(promises).then(function(values) {
-    var newCurrentBid = currentBid;
-    var newHighestBidResp = null;
-    var newCompetitors = [];
+    var highest = 0;
+    var highestResp = null;
+    var second = 0;
     for (var i=0; i<values.length; i++) {
       var pk = competitors[i];
       if (values[i].body.resp == FOLD) {
@@ -72,19 +56,30 @@ function pollBids(competitors, pkToCallback, pkToBidIds, currentBid, highestBidR
       }
 
       // validate sigs
+      var sig = values[i].body.sig;
+      var receiver = values[i].body.receiver;
+      var eventId = values[i].body.eventId;
+      var currentBlockId = values[i].body.currentBlockId;
+      var ad = values[i].body.ad;
+      var amt = values[i].body.amt;
+      var pk = values[i].body.sender;
 
-      newCompetitors.push(pk);
-      if (values[i].body.amt > newCurrentBid) {
-        newCurrentBid = values[i].body.amt;
-        newHighestBidResp = values[i].body;
+      if (!mediciUtils.verify(pk, [receiver, eventId, currentBlockId, ad, amt], sig)) {
+        console.err("Found bogus signature!");
+        continue;
+      }
+
+      if (amt > highest) {
+        second = highest;
+        highest = amt;
+        highestResp = values[i].body;
       }
 
       console.log(values[i].body);
     }
-    console.log("new...", newHighestBidResp, newCurrentBid);
-    pollBids(newCompetitors, pkToCallback, pkToBidIds, newCurrentBid, newHighestBidResp, publisherPk, eventId, res);
+    res.json(highestResp);
+
   }, function(err) {
-      // error occurred
       console.log(err);
   });
 }
