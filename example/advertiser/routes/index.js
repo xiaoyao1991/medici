@@ -6,7 +6,7 @@ var BID = 1;
 var FOLD = -1;
 
 var ASSETS = {
-  "nike": '<img src="http://modernmediamix.com/wp-content/uploads/2013/04/NIKE.jpg"/>',
+  "nike": '<img src="https://www.nike.com/android-icon-128x128.png"/>',
   "adidas": '<img src="http://www.adidas.com/dwstatic/aaqx_prd/on/demandware.static/Sites-adidas-US-Site/-/default/dw721d387e/images/favicons/favicon.png"/>'
 }
 
